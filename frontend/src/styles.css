@@ -1,0 +1,59 @@
+:root { --azul:#1d4ed8; --rojo:#dc2626; --rojo-bg:#fee2e2; --verde:#16a34a; --gris:#64748b; --borde:#e2e8f0; }
+* { box-sizing: border-box; }
+body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background:#f1f5f9; color:#0f172a; }
+.topbar { background:#0f172a; color:#fff; padding:12px 24px; display:flex; flex-wrap:wrap; gap:16px; align-items:center; justify-content:space-between; }
+.topbar h1 { margin:0; font-size:1.2rem; }
+.tab { background:transparent; color:#cbd5e1; border:0; padding:8px 16px; border-radius:6px; cursor:pointer; font-size:.95rem; }
+.tab.activo { background:var(--azul); color:#fff; }
+main { max-width:1200px; margin:0 auto; padding:24px 16px; }
+h2 { margin:24px 0 12px; }
+
+.toolbar { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-bottom:12px; }
+.toolbar input[type=search] { flex:1; min-width:220px; }
+input, select { padding:8px 10px; border:1px solid var(--borde); border-radius:6px; font-size:.95rem; background:#fff; width:100%; }
+.toolbar input, .toolbar select { width:auto; }
+.toolbar input[type=search] { width:auto; }
+
+.btn { padding:8px 14px; border:1px solid var(--borde); background:#fff; border-radius:6px; cursor:pointer; font-size:.9rem; }
+.btn.primario { background:var(--azul); border-color:var(--azul); color:#fff; }
+.btn.peligro { color:var(--rojo); border-color:var(--rojo); }
+.btn:disabled { opacity:.6; cursor:wait; }
+
+.tabla-wrap { overflow-x:auto; background:#fff; border-radius:10px; border:1px solid var(--borde); }
+table { width:100%; border-collapse:collapse; font-size:.92rem; }
+th, td { padding:10px 12px; text-align:left; border-bottom:1px solid var(--borde); white-space:nowrap; }
+th { background:#f8fafc; font-weight:600; }
+.num { text-align:right; } .centro { text-align:center; color:var(--gris); padding:24px; }
+
+/* Alerta de stock bajo: fila completa en rojo */
+tr.bajo-stock td { background:var(--rojo-bg); color:#991b1b; font-weight:500; }
+.badge { margin-left:8px; background:var(--rojo); color:#fff; font-size:.7rem; padding:2px 6px; border-radius:99px; }
+
+.alerta { padding:10px 14px; border-radius:8px; margin:12px 0; font-size:.92rem; }
+.alerta-roja { background:var(--rojo-bg); color:#991b1b; border:1px solid #fecaca; }
+.alerta-error { background:var(--rojo-bg); color:#991b1b; border:1px solid #fecaca; }
+.alerta-ok { background:#dcfce7; color:#166534; border:1px solid #bbf7d0; }
+
+.card { background:#fff; border:1px solid var(--borde); border-radius:10px; padding:20px; }
+.grid2 { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:14px; margin-bottom:12px; }
+.campo { display:flex; flex-direction:column; gap:4px; font-size:.85rem; color:var(--gris); }
+.campo.ancho { grid-column:1 / -1; }
+.error { color:var(--rojo); }
+
+.segmentado { display:flex; gap:8px; margin-bottom:16px; }
+.seg { flex:1; padding:10px; border:1px solid var(--borde); background:#fff; border-radius:8px; cursor:pointer; font-weight:600; }
+.seg.activo.entrada { background:var(--verde); color:#fff; border-color:var(--verde); }
+.seg.activo.salida { background:var(--rojo); color:#fff; border-color:var(--rojo); }
+.pill { padding:2px 10px; border-radius:99px; font-size:.78rem; font-weight:600; }
+.pill.entrada { background:#dcfce7; color:#166534; } .pill.salida { background:var(--rojo-bg); color:#991b1b; }
+
+.modal-fondo { position:fixed; inset:0; background:rgba(15,23,42,.55); display:flex; align-items:center; justify-content:center; padding:16px; z-index:10; }
+.modal { background:#fff; border-radius:12px; padding:24px; width:100%; max-width:640px; max-height:92vh; overflow:auto; }
+.modal h2 { margin-top:0; }
+.acciones { display:flex; justify-content:flex-end; gap:10px; margin-top:8px; }
+@media (max-width:600px) { .topbar { padding:12px; } main { padding:12px 8px; } }
+
+/* Pantalla de proveedores: formulario a la izquierda, listado a la derecha */
+.layout-prov { display:grid; grid-template-columns:minmax(280px, 360px) 1fr; gap:20px; align-items:start; }
+.layout-prov .card { display:flex; flex-direction:column; gap:12px; }
+@media (max-width:800px) { .layout-prov { grid-template-columns:1fr; } }
