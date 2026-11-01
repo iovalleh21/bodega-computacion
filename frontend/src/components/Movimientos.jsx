@@ -1,8 +1,10 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 
-const hoy = () => new Date().toISOString().slice(0, 10);
-const haceUnMes = () => new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
+// AAAA-MM-DD según la hora LOCAL (toISOString usa UTC y en Chile, de noche, ya marca el día siguiente)
+const fechaLocal = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+const hoy = () => fechaLocal(new Date());
+const haceUnMes = () => fechaLocal(new Date(Date.now() - 30 * 864e5));
 
 export default function Movimientos() {
   // Catálogos
@@ -17,33 +19,32 @@ export default function Movimientos() {
   const [enviando, setEnviando] = useState(false);
 
   // Historial
-  const [filtros, setFiltros] = useState({ desde: haceUnMes(), hasta: hoy(), tipo: '' });
+  const [filtros, setFiltros] = useState(() => ({ desde: haceUnMes(), hasta: hoy(), tipo: '' }));
   const [historial, setHistorial] = useState([]);
   const [errorHist, setErrorHist] = useState('');
 
-  const cargarCatalogos = useCallback(async () => {
-    try {
-      const [p, u, pr] = await Promise.all([
-        api.productos.listar({}), api.productos.ubicaciones(), api.proveedores.listar(),
-      ]);
-      setProductos(p); setUbicaciones(u); setProveedores(pr);
-    } catch (e) {
-      setMsg({ tipo: 'error', texto: e.message });
-    }
-  }, []);
+  // Contadores para volver a consultar la API tras registrar un movimiento
+  const [recargaCatalogos, setRecargaCatalogos] = useState(0);
+  const [recargaHistorial, setRecargaHistorial] = useState(0);
 
-  const cargarHistorial = useCallback(async () => {
-    setErrorHist('');
-    try {
-      setHistorial(await api.movimientos.listar(filtros));
-    } catch (e) {
-      setHistorial([]);
-      setErrorHist(e.message); // ej. rango de fechas invertido (error del SP, HTTP 400)
-    }
-  }, [filtros]);
+  useEffect(() => {
+    let vigente = true;
+    Promise.all([api.productos.listar({}), api.productos.ubicaciones(), api.proveedores.listar()])
+      .then(([p, u, pr]) => { if (vigente) { setProductos(p); setUbicaciones(u); setProveedores(pr); } })
+      .catch((e) => { if (vigente) setMsg({ tipo: 'error', texto: e.message }); });
+    return () => { vigente = false; };
+  }, [recargaCatalogos]);
 
-  useEffect(() => { cargarCatalogos(); }, [cargarCatalogos]);
-  useEffect(() => { cargarHistorial(); }, [cargarHistorial]);
+  useEffect(() => {
+    let vigente = true;
+    api.movimientos.listar(filtros)
+      .then((datos) => { if (vigente) { setHistorial(datos); setErrorHist(''); } })
+      .catch((e) => {
+        // ej. rango de fechas invertido (error del SP, HTTP 400)
+        if (vigente) { setHistorial([]); setErrorHist(e.message); }
+      });
+    return () => { vigente = false; };
+  }, [filtros, recargaHistorial]);
 
   const cambiar = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -67,8 +68,8 @@ export default function Movimientos() {
       const r = tipo === 'E' ? await api.movimientos.entrada(body) : await api.movimientos.salida(body);
       setMsg({ tipo: 'ok', texto: `Movimiento #${r.MovimientoId} registrado. Stock total del producto: ${r.StockTotal}.` });
       setForm({ ...form, cantidad: '', referencia: '' });
-      cargarCatalogos();   // refresca stock mostrado en el select
-      cargarHistorial();
+      setRecargaCatalogos((n) => n + 1);   // refresca el stock mostrado en el select
+      setRecargaHistorial((n) => n + 1);
     } catch (err) {
       // Muestra el error real de la API, p. ej. "Stock insuficiente. Disponible: 5, solicitado: 10."
       setMsg({ tipo: 'error', texto: err.message });

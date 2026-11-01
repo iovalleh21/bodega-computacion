@@ -13,7 +13,7 @@ export function entero(valor, nombre, { min = 0, requerido = true } = {}) {
 
 export function decimal(valor, nombre) {
   const n = Number(valor);
-  if (valor === '' || valor === null || valor === undefined || Number.isNaN(n) || n < 0)
+  if (valor === '' || valor === null || valor === undefined || !Number.isFinite(n) || n < 0)
     throw new HttpError(400, `${nombre} debe ser un número >= 0.`);
   return n;
 }
@@ -49,7 +49,14 @@ export function validarProveedor(b = {}) {
   };
 }
 
+/** Exige AAAA-MM-DD y que sea una fecha real (rechaza 2026-13-45 o 2026-02-30). */
 export function validarFechaISO(valor, nombre) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(valor || '')) throw new HttpError(400, `${nombre} debe tener formato AAAA-MM-DD.`);
+  const msg = `${nombre} debe ser una fecha válida con formato AAAA-MM-DD.`;
+  if (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) throw new HttpError(400, msg);
+  const [a, m, d] = valor.split('-').map(Number);
+  const f = new Date(Date.UTC(a, m - 1, d));
+  const real = f.getUTCFullYear() === a && f.getUTCMonth() === m - 1 && f.getUTCDate() === d;
+  // Rango acotado: el SP suma un día a "hasta" y DATETIME2 no tolera el límite superior
+  if (!real || a < 1900 || a > 2100) throw new HttpError(400, msg);
   return valor;
 }

@@ -3,6 +3,18 @@ import { api } from '../api.js';
 
 const vacio = { sku: '', nombre: '', categoriaId: '', marcaId: '', precioCosto: '', precioVenta: '', stockMinimo: 0 };
 
+// Definido FUERA de ProductoForm: si se declarara dentro, React lo trataría como un componente
+// nuevo en cada render y los inputs perderían el foco después de cada tecla.
+function Campo({ etiqueta, error, children }) {
+  return (
+    <label className="campo">
+      <span>{etiqueta}</span>
+      {children}
+      {error && <small className="error">{error}</small>}
+    </label>
+  );
+}
+
 export default function ProductoForm({ producto, categorias, marcas, onClose, onSaved }) {
   const editando = Boolean(producto);
   const [f, setF] = useState(
@@ -57,14 +69,6 @@ export default function ProductoForm({ producto, categorias, marcas, onClose, on
     }
   };
 
-  const Campo = ({ nombre, etiqueta, children }) => (
-    <label className="campo">
-      <span>{etiqueta}</span>
-      {children}
-      {errores[nombre] && <small className="error">{errores[nombre]}</small>}
-    </label>
-  );
-
   return (
     <div className="modal-fondo" onClick={onClose}>
       <form className="modal" onClick={(e) => e.stopPropagation()} onSubmit={enviar} noValidate>
@@ -72,31 +76,31 @@ export default function ProductoForm({ producto, categorias, marcas, onClose, on
         {errorApi && <div className="alerta alerta-error">{errorApi}</div>}
 
         <div className="grid2">
-          <Campo nombre="sku" etiqueta="SKU">
+          <Campo etiqueta="SKU" error={errores.sku}>
             <input name="sku" value={f.sku} onChange={cambiar} maxLength={30} />
           </Campo>
-          <Campo nombre="nombre" etiqueta="Nombre">
+          <Campo etiqueta="Nombre" error={errores.nombre}>
             <input name="nombre" value={f.nombre} onChange={cambiar} maxLength={150} />
           </Campo>
-          <Campo nombre="categoriaId" etiqueta="Categoría">
+          <Campo etiqueta="Categoría" error={errores.categoriaId}>
             <select name="categoriaId" value={f.categoriaId} onChange={cambiar}>
               <option value="">Seleccione…</option>
               {categorias.map((c) => <option key={c.CategoriaId} value={c.CategoriaId}>{c.Nombre}</option>)}
             </select>
           </Campo>
-          <Campo nombre="marcaId" etiqueta="Marca">
+          <Campo etiqueta="Marca" error={errores.marcaId}>
             <select name="marcaId" value={f.marcaId} onChange={cambiar}>
               <option value="">Seleccione…</option>
               {marcas.map((m) => <option key={m.MarcaId} value={m.MarcaId}>{m.Nombre}</option>)}
             </select>
           </Campo>
-          <Campo nombre="precioCosto" etiqueta="Precio costo">
+          <Campo etiqueta="Precio costo" error={errores.precioCosto}>
             <input name="precioCosto" type="number" min="0" step="0.01" value={f.precioCosto} onChange={cambiar} />
           </Campo>
-          <Campo nombre="precioVenta" etiqueta="Precio venta">
+          <Campo etiqueta="Precio venta" error={errores.precioVenta}>
             <input name="precioVenta" type="number" min="0" step="0.01" value={f.precioVenta} onChange={cambiar} />
           </Campo>
-          <Campo nombre="stockMinimo" etiqueta="Stock mínimo">
+          <Campo etiqueta="Stock mínimo" error={errores.stockMinimo}>
             <input name="stockMinimo" type="number" min="0" step="1" value={f.stockMinimo} onChange={cambiar} />
           </Campo>
         </div>

@@ -2,11 +2,13 @@ import { useState } from 'react';
 import Inventario from './components/Inventario.jsx';
 import Movimientos from './components/Movimientos.jsx';
 import Proveedores from './components/Proveedores.jsx';
+import Reportes from './components/Reportes.jsx';
 
 const VISTAS = [
   { id: 'inventario', etiqueta: 'Inventario', Componente: Inventario },
   { id: 'movimientos', etiqueta: 'Movimientos', Componente: Movimientos },
   { id: 'proveedores', etiqueta: 'Proveedores', Componente: Proveedores },
+  { id: 'reportes', etiqueta: 'Reportes', Componente: Reportes },
 ];
 
 export default function App() {

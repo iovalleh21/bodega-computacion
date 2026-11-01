@@ -8,6 +8,21 @@ export class HttpError extends Error {
   }
 }
 
+// SQL Server nombra la restricción UNIQUE violada dentro del mensaje (error 2627/2601).
+// Se usa para dar un mensaje preciso. Las filas desactivadas siguen ocupando su SKU/RUT.
+const DUPLICADOS = [
+  ['UQ_Producto_SKU', 'Ya existe un producto (activo o desactivado) con ese SKU.'],
+  ['UQ_Proveedor_Rut', 'Ya existe un proveedor (activo o desactivado) con ese RUT.'],
+  ['UQ_Categoria_Nombre', 'Ya existe una categoría con ese nombre.'],
+  ['UQ_Marca_Nombre', 'Ya existe una marca con ese nombre.'],
+  ['UQ_Ubicacion_Codigo', 'Ya existe una ubicación con ese código.'],
+];
+
+export function mensajeDuplicado(mensajeSql = '') {
+  const hallado = DUPLICADOS.find(([restriccion]) => mensajeSql.includes(restriccion));
+  return hallado ? hallado[1] : 'Registro duplicado.';
+}
+
 export function notFound(req, res) {
   res.status(404).json({ error: `Ruta no encontrada: ${req.method} ${req.originalUrl}` });
 }
@@ -23,7 +38,7 @@ export function errorHandler(err, req, res, next) { // eslint-disable-line no-un
     return res.status(400).json({ error: err.message, codigo: num });
   }
   if (num === 2627 || num === 2601) {
-    return res.status(409).json({ error: 'Registro duplicado (SKU o RUT ya existe).' });
+    return res.status(409).json({ error: mensajeDuplicado(err.message) });
   }
   if (num === 547) {
     return res.status(409).json({ error: 'Operación inválida: viola una restricción de la base de datos.' });

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { api } from '../api.js';
 import ProductoForm from './ProductoForm.jsx';
 
@@ -19,15 +19,20 @@ export default function Inventario() {
       .catch((e) => setError(e.message));
   }, []);
 
+  // Solo la última petición actualiza la pantalla (una respuesta lenta no pisa a una más reciente)
+  const ultimaPeticion = useRef(0);
+
   const cargar = useCallback(async () => {
+    const id = ++ultimaPeticion.current;
     setCargando(true);
     setError('');
     try {
-      setProductos(await api.productos.listar({ q: q.trim(), categoriaId }));
+      const datos = await api.productos.listar({ q: q.trim(), categoriaId });
+      if (id === ultimaPeticion.current) setProductos(datos);
     } catch (e) {
-      setError(e.message);
+      if (id === ultimaPeticion.current) setError(e.message);
     } finally {
-      setCargando(false);
+      if (id === ultimaPeticion.current) setCargando(false);
     }
   }, [q, categoriaId]);
 

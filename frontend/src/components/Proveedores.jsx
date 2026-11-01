@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 
 const vacio = { rut: '', nombre: '', email: '', telefono: '' };
@@ -13,21 +13,18 @@ export default function Proveedores() {
   const [form, setForm] = useState(vacio);
   const [errores, setErrores] = useState({});
   const [msg, setMsg] = useState(null);        // { tipo: 'ok' | 'error', texto }
-  const [cargando, setCargando] = useState(false);
+  const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
+  const [recarga, setRecarga] = useState(0);  // se incrementa para volver a consultar la API
 
-  const cargar = useCallback(async () => {
-    setCargando(true);
-    try {
-      setProveedores(await api.proveedores.listar());
-    } catch (e) {
-      setMsg({ tipo: 'error', texto: e.message });
-    } finally {
-      setCargando(false);
-    }
-  }, []);
-
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => {
+    let vigente = true;
+    api.proveedores.listar()
+      .then((datos) => { if (vigente) setProveedores(datos); })
+      .catch((e) => { if (vigente) setMsg({ tipo: 'error', texto: e.message }); })
+      .finally(() => { if (vigente) setCargando(false); });
+    return () => { vigente = false; };
+  }, [recarga]);
 
   const cambiar = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -57,9 +54,9 @@ export default function Proveedores() {
       setMsg({ tipo: 'ok', texto: 'Proveedor registrado correctamente.' });
       setForm(vacio);
       setErrores({});
-      cargar();
+      setRecarga((n) => n + 1);
     } catch (err) {
-      // Ej: 409 "Registro duplicado (SKU o RUT ya existe)."
+      // Ej: 409 "Ya existe un proveedor (activo o desactivado) con ese RUT."
       setMsg({ tipo: 'error', texto: err.message });
     } finally {
       setGuardando(false);
@@ -70,7 +67,7 @@ export default function Proveedores() {
     if (!window.confirm(`¿Desactivar al proveedor "${p.Nombre}"?`)) return;
     try {
       await api.proveedores.desactivar(p.ProveedorId);
-      cargar();
+      setRecarga((n) => n + 1);
     } catch (err) {
       setMsg({ tipo: 'error', texto: err.message });
     }

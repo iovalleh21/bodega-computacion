@@ -1,6 +1,11 @@
-// Cliente HTTP único. Si la API responde error, lanza Error con el mensaje del backend
+// Cliente HTTP único. El frontend NUNCA toca SQL Server: solo habla con la API del backend.
+// En desarrollo, Vite redirige /api a http://localhost:3000 (ver vite.config.js).
+// Si el backend corre en otro servidor, define VITE_API_URL (ver .env.example).
+const BASE = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
+
+// Si la API responde error, lanza Error con el mensaje del backend
 async function request(path, options = {}) {
-  const res = await fetch(`/api${path}`, {
+  const res = await fetch(`${BASE}${path}`, {
     headers: { 'Content-Type': 'application/json' },
     ...options,
     body: options.body ? JSON.stringify(options.body) : undefined,
@@ -32,7 +37,7 @@ export const api = {
     marcas: () => request('/productos/catalogos/marcas'),
     ubicaciones: () => request('/productos/catalogos/ubicaciones'),
   },
-    proveedores: {
+  proveedores: {
     listar: () => request('/proveedores'),
     crear: (body) => request('/proveedores', { method: 'POST', body }),
     desactivar: (id) => request(`/proveedores/${id}`, { method: 'DELETE' }),
@@ -41,5 +46,9 @@ export const api = {
     entrada: (body) => request('/movimientos/entrada', { method: 'POST', body }),
     salida: (body) => request('/movimientos/salida', { method: 'POST', body }),
     listar: (filtros) => request(`/movimientos${qs(filtros)}`),
+  },
+  reportes: {
+    bajoStock: () => request('/reportes/bajo-stock'),
+    stockPorCategoria: () => request('/reportes/stock-por-categoria'),
   },
 };

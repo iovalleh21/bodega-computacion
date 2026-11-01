@@ -1,16 +1,27 @@
-# React + Vite
+# Frontend – Bodega de Computadores
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interfaz en React + Vite. **No se conecta a SQL Server**: toda la información se obtiene y se
+modifica a través de la API REST del backend (`../backend`), usando `src/api.js`.
 
-Currently, two official plugins are available:
+## Ejecutar
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+npm run dev        # http://localhost:5173  (redirige /api a http://localhost:3000)
+npm run lint
+npm run build      # genera dist/
+```
 
-## React Compiler
+El backend debe estar corriendo (ver `../README.md`). Si la API está en otra URL, copia
+`.env.example` a `.env` y define `VITE_API_URL`.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Estructura
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+| Archivo | Responsabilidad |
+|---|---|
+| `src/api.js` | Único punto de comunicación con el backend (`fetch`) |
+| `src/components/Inventario.jsx` | Listado, búsqueda, alta/edición/desactivación de productos |
+| `src/components/ProductoForm.jsx` | Formulario modal de producto con validación en cliente |
+| `src/components/Movimientos.jsx` | Registro de entradas/salidas e historial (Kardex) |
+| `src/components/Proveedores.jsx` | Alta, listado y desactivación de proveedores |
+| `src/components/Reportes.jsx` | Productos bajo stock y stock por categoría |
